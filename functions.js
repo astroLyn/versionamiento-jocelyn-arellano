@@ -1,100 +1,90 @@
-// Open (or create) the database with the version 1
 let db;
-const request = indexedDB.open('exampleProductDB', 1);
+const request = indexedDB.open('libraryDB', 1);
 
 request.onerror = function(event) {
-    console.error("Database error: ", event.target.error);
+    console.error("Error en base de datos: ", event.target.error);
 };
 
 request.onsuccess = function(event) {
     db = event.target.result;
-    loadProductTable(); // Load products after the database is opened
+    loadBooksTable(); 
 };
 
 request.onupgradeneeded = function(event) {
     db = event.target.result;
-    db.createObjectStore('products', { keyPath: 'id' });
+    db.createObjectStore('books', { keyPath: 'id' });
 };
 
-//Load/Read products from IndexedDB and display them in the table
-function loadProductTable() {
-    const transaction = db.transaction(['products'], 'readonly');
-    const store = transaction.objectStore('products');
+function loadBooksTable() {
+    const transaction = db.transaction(['books'], 'readonly');
+    const store = transaction.objectStore('books');
 
     const request = store.getAll();
 
     request.onsuccess = function(event) {
-        const products = event.target.result;
-        const tableBody = document.querySelector('#productsTable tbody');
-        tableBody.innerHTML = ''; // Clear the table before adding new products
+        const books = event.target.result;
+        const tableBody = document.querySelector('#booksTable tbody');
+        tableBody.innerHTML = ''; 
 
-        products.forEach(product => {
-            //Create a table row
+        books.forEach(book => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>$${product.price}</td>
-                <td><button class="delete-btn" data-id="${product.id}">Delete</button></td>
+                <td>${book.id}</td>
+                <td>${book.name}</td>
+                <td>${book.author}</td>
+                <td>$${book.price}</td>
+                <td><button class="delete-btn" data-id="${book.id}">Eliminar</button></td>
             `;
             tableBody.appendChild(row);
         });
 
-    //Add event listeners for delete buttons
         document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', deleteProduct);
+            button.addEventListener('click', deleteBook);
         });
     };
 }
 
-//Add/Create a new product
-function addProduct() {
+function addBook() {
     const name = document.getElementById('name').value.trim();
+    const author = document.getElementById('author').value.trim();
     const price = parseFloat(document.getElementById('price').value);
 
-    //Validate inputs
-    if (!name || isNaN(price) || price <= 0) {
-        alert("Please enter a valid name and price.");
+    if (!name || !author || isNaN(price) || price <= 0) {
+        alert("Por favor ingresa un título, autor y precio válido.");
         return;
     }
 
-    const transaction = db.transaction(['products'], 'readwrite');
-    const store = transaction.objectStore('products');
+    const transaction = db.transaction(['books'], 'readwrite');
+    const store = transaction.objectStore('books');
 
-    //Get/Read the products
     const getAllRequest = store.getAll();
 
     getAllRequest.onsuccess = function(event) {
-        const products = event.target.result;
-        const newProduct = {
-            id: products.length > 0 ? products[products.length - 1].id + 1 : 1, // Assign an incremental ID
+        const books = event.target.result;
+        const newBook = {
+            id: books.length > 0 ? books[books.length - 1].id + 1 : 1, 
             name: name,
+            author: author,
             price: price
         };
 
-    //Add/Create the new product to the DB
-        store.add(newProduct);
-        //Clear the form fields
+        store.add(newBook);
+        
         document.getElementById('name').value = '';
+        document.getElementById('author').value = '';
         document.getElementById('price').value = '';
 
-    //Update the table with the new product
-        loadProductTable();
+        loadBooksTable();
     };
 }
 
-//Delete a product
-function deleteProduct(event) {
-    const productId = parseInt(event.target.getAttribute('data-id')); // Get the product ID from the button's data attribute
-    const transaction = db.transaction(['products'], 'readwrite');
-    const store = transaction.objectStore('products');
+function deleteBook(event) {
+    const bookId = parseInt(event.target.getAttribute('data-id')); 
+    const transaction = db.transaction(['books'], 'readwrite');
+    const store = transaction.objectStore('books');
 
-    //Delete the product with the corresponding ID
-    store.delete(productId);
-
-    //Reload the product table to reflect changes
-    loadProductTable();
+    store.delete(bookId);
+    loadBooksTable();
 }
 
-//Event listener for the button click
-document.getElementById('addProduct').addEventListener('click', addProduct);
+document.getElementById('addBook').addEventListener('click', addBook);
