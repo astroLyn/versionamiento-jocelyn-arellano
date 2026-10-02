@@ -118,3 +118,26 @@ td {
 .delete-btn:hover {
     background-color: #d32f2f;
 }
+
+/* Animación flotante para el ícono del libro */
+.book-icon {
+    display: inline-block;
+    animation: floatBook 3s ease-in-out infinite;
+}
+
+@keyframes floatBook {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(8deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Efecto hover interactivo para las filas de la tabla */
+#booksTable tbody tr {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s;
+}
+
+#booksTable tbody tr:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(93, 64, 55, 0.2);
+    background-color: #fff8e1;
+}
